@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function PredictForm() {
   const [form, setForm] = useState({
@@ -11,9 +12,18 @@ export default function PredictForm() {
     clip_image_text_sim: "",
   });
 
+  const navigate = useNavigate();
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [autoDetect, setAutoDetect] = useState(true); // fake switch
+  const [autoDetect, setAutoDetect] = useState(true);
+  const [image, setImage] = useState(null);
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImage(URL.createObjectURL(file)); // preview
+    }
+  };
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -46,6 +56,12 @@ export default function PredictForm() {
     setLoading(false);
   };
 
+  const getComment = (score) => {
+    if (score > 0.8) return "🚨 High risk detected. Listing shows strong fraudulent patterns.";
+    if (score > 0.5) return "⚠️ Moderate risk. Some suspicious signals found.";
+    return "✅ Low risk. Listing appears safe and normal.";
+  };
+
   return (
     <div style={styles.layout}>
 
@@ -53,23 +69,28 @@ export default function PredictForm() {
       <div style={styles.sidebar}>
         <div style={styles.sidebarHeader}>Amazon Dashboard</div>
 
-        <div style={styles.menuItem}> All Products</div>
+        <div style={styles.menuItem} onClick={() => navigate("/products")}>
+          All Products
+        </div>
+
         <div
-          style={{
-            ...styles.menuItem,
-            backgroundColor: "#ff9900",
-            color: "black",
-            fontWeight: "700",
-            borderRadius: "6px",
-            boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
-          }}
-        >
+          style={{ ...styles.menuItem, backgroundColor: "#ff9900" }}
+          onClick={() => navigate("/")}>
           Suspicious Checker
         </div>
 
-        <div style={styles.menuItem}>Reports</div>
-        <div style={styles.menuItem}>User Accounts</div>
-        <div style={styles.menuItem}>Settings</div>
+        <div style={styles.menuItem} onClick={() => navigate("/reports")}>
+          Reports
+        </div>
+
+        <div style={styles.menuItem} onClick={() => navigate("/users")}>
+          User Accounts
+        </div>
+
+        <div style={styles.menuItem} onClick={() => navigate("/settings")}>
+          Settings
+        </div>
+
       </div>
 
       {/* =================== Main section =================== */}
@@ -91,19 +112,7 @@ export default function PredictForm() {
         {/* Title */}
         <h2 style={styles.pageTitle}>Suspicious Product Checker</h2>
 
-        {/* Fake Switch
-        <div style={styles.switchRow}>
-          <span style={{ fontWeight: 600 }}>Auto-Detect Enabled</span>
 
-          <label style={styles.switch}>
-            <input
-              type="checkbox"
-              checked={autoDetect}
-              onChange={() => setAutoDetect(!autoDetect)}
-            />
-            <span style={styles.slider}></span>
-          </label>
-        </div> */}
 
         {/* Fake Switch */}
         <div style={styles.switchRow}>
@@ -118,10 +127,7 @@ export default function PredictForm() {
               onChange={() => setAutoDetect(!autoDetect)}
               style={styles.switchInput}
             />
-            {/* <span style={{
-              ...styles.slider,
-              backgroundColor: autoDetect ? "#ff9900" : "#ccc",
-            }}></span> */}
+
             <span
               style={{
                 ...styles.slider,
@@ -195,7 +201,7 @@ export default function PredictForm() {
                   required
                 />
               </div>
-            </div>
+            {/* </div> */}
 
             <div style={styles.row}>
               <div style={styles.field}>
@@ -222,6 +228,44 @@ export default function PredictForm() {
                 />
               </div>
             </div>
+          </div>
+            {/* RIGHT: IMAGE UPLOAD */}
+              <div style={styles.imageCard}>
+                <h3>Product Image</h3>
+
+                <label style={styles.uploadBox}>
+                  {image ? (
+                    <img
+                      src={image}
+                      alt="preview"
+                      style={styles.previewImage}
+                    />
+                  ) : (
+                    <>
+                      <p style={{ color: "#777" }}>Click to Upload</p>
+                      <p style={{ fontSize: "12px", color: "#aaa" }}>
+                        JPG, PNG supported
+                      </p>
+                    </>
+                  )}
+
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    style={{ display: "none" }}
+                  />
+                </label>
+
+                {image && (
+                  <button
+                    style={styles.removeBtn}
+                    onClick={() => setImage(null)}
+                  >
+                    Remove Image
+                  </button>
+                )}
+              </div>
 
             <div style={styles.field}>
               <label style={styles.label}>CLIP Image-Text Similarity</label>
@@ -242,27 +286,69 @@ export default function PredictForm() {
         </div>
 
         {/* =================== Result Section =================== */}
+
         {result && (
-          <div style={styles.resultCard}>
-            <h3>Prediction Result</h3>
+          <div style={styles.resultGrid}>
 
-            <p>
-              <strong>Suspicion Score:</strong> {result.suspicion_score}
-            </p>
+            {/* Box 1: Prediction */}
+            <div style={styles.resultCard}>
+              <h3>Prediction Result</h3>
 
-            <p>
-              <strong>Status:</strong>{" "}
-              <span
-                style={{
+              <p><strong>Suspicion Score:</strong> {result.suspicion_score}</p>
+
+              <p>
+                <strong>Status:</strong>{" "}
+                <span style={{
                   color: result.label === "safe" ? "green" : "red",
                   fontWeight: 700,
-                }}
-              >
-                {result.label === "safe" ? "Safe" : "Suspicious"}
-              </span>
-            </p>
+                }}>
+                  {result.label === "safe" ? "Safe" : "Suspicious"}
+                </span>
+              </p>
+            </div>
+
+            {/* Box 2: AI Comment */}
+            <div style={styles.resultCard}>
+              <h3>AI Analysis</h3>
+              <p>{getComment(result.suspicion_score)}</p>
+            </div>
+
+            {/* Box 3: Graph */}
+            <div style={styles.resultCard}>
+              <h3>Risk Visualization</h3>
+
+              <div style={styles.graphBar}>
+                <div
+                  style={{
+                    ...styles.graphFill,
+                    width: `${result.suspicion_score * 100}%`,
+                    background:
+                      result.suspicion_score > 0.8
+                        ? "#e74c3c"
+                        : result.suspicion_score > 0.5
+                          ? "#f1c40f"
+                          : "#2ecc71",
+                  }}
+                />
+              </div>
+
+              <p style={{ marginTop: "8px" }}>
+                {(result.suspicion_score * 100).toFixed(1)}%
+              </p>
+            </div>
+
+            {/* Box 4: Extra Insights */}
+            <div style={styles.resultCard}>
+              <h3>Key Signals</h3>
+
+              <p>📉 Price anomaly detected</p>
+              <p>🧠 Text similarity mismatch</p>
+              <p>⚠️ Seller pattern risk</p>
+            </div>
+
           </div>
         )}
+
       </div>
     </div>
   );
@@ -271,6 +357,41 @@ export default function PredictForm() {
 /* ===================== STYLES ===================== */
 
 const styles = {
+  previewImage: {
+    width: "100%",
+    height: "150px",
+    objectFit: "cover",
+    borderRadius: "8px",
+  },
+
+  removeBtn: {
+    marginTop: "10px",
+    padding: "6px 10px",
+    background: "#e74c3c",
+    color: "#fff",
+    border: "none",
+    borderRadius: "6px",
+    cursor: "pointer",
+  },
+  resultGrid: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: "20px",
+    marginTop: "20px",
+  },
+  graphBar: {
+    height: "12px",
+    background: "#eee",
+    borderRadius: "6px",
+    marginTop: "10px",
+    overflow: "hidden",
+  },
+
+  graphFill: {
+    height: "100%",
+    borderRadius: "6px",
+    transition: "0.3s",
+  },
   switchRow: {
     display: "flex",
     justifyContent: "space-between",
@@ -399,7 +520,7 @@ const styles = {
     justifyContent: "space-between",
     marginBottom: "20px",
     alignItems: "center",
-    width: "300px",
+    width: "200px",
   },
 
   switch: {
@@ -468,10 +589,10 @@ const styles = {
   },
 
   resultCard: {
-    background: "white",
-    padding: "20px",
-    borderRadius: "12px",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-    width: "400px",
+    background: "#fff",
+    padding: "16px",
+    borderRadius: "10px",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+    minHeight: "120px",
   },
 };
