@@ -1,61 +1,118 @@
-# 🛡️ Suspicious Product Checker
+# 🛡️ Product Suspicion Detection System for E-Commerce
 
-A machine-learning powered system that detects potentially suspicious or fraudulent product listings based on text metadata, pricing anomalies, and image–text similarity. The system uses a **React.js frontend**, a **FastAPI backend**, and an **ML processing pipeline** involving NLP embeddings, PCA, scaling, and a PyTorch MLP classifier.
+An advanced **AI-powered fraud detection system** designed to identify suspicious or fraudulent product listings in e-commerce platforms. This system leverages **multimodal intelligence (text + image)**, **risk scoring**, and **real-time analytics dashboards** to provide actionable insights for users, sellers, and administrators.
+
+---
+
+## 🚀 What’s New (Major Upgrades)
+
+✨ Image-based fraud detection using CLIP  
+✨ AI-powered explanations for predictions  
+✨ Interactive risk visualization dashboard  
+✨ Key signals breakdown:
+- Price anomaly detection  
+- Text inconsistency detection  
+- Seller risk profiling  
+
+✨ User & seller risk tracking system  
+✨ Admin dashboard with reports, alerts & controls  
+✨ Real-time fraud alerts + activity tracking  
+
+---
+
+## 🧠 Core Intelligence
+
+• NLP embeddings using SentenceTransformers  
+• Price anomaly detection using Z-score analysis  
+• Multimodal similarity using CLIP (image + text)  
+• PyTorch neural network for final classification  
 
 ---
 
 ## 📸 UI Preview
-Frontend Dashboard Screenshot:
-<img width="1866" height="916" alt="Screenshot 2025-11-21 132419" src="https://github.com/user-attachments/assets/d22708a8-fb66-4bde-8d45-2766b366d821" />
 
-Architecture Diagram:
-<img width="1432" height="706" alt="diagram-export-11-21-2025-2_03_42-PM" src="https://github.com/user-attachments/assets/99e0bebd-6000-4b6f-8fff-01de5e43386f" />
+### Dashboard Screens
+<img width="1600" height="750" src="https://github.com/user-attachments/assets/0baa3d8b-6494-4372-892b-0e67915533b5" />
+<img width="1600" height="755" src="https://github.com/user-attachments/assets/5e7cb7aa-3362-4748-a1ed-23efd19b13ee" />
+
+### Architecture Diagram
+<img width="1432" height="706" src="https://github.com/user-attachments/assets/99e0bebd-6000-4b6f-8fff-01de5e43386f" />
 
 ---
 
 ## 📌 Features
 
-* 🔍 Detects suspicious products using ML
-* 🧠 SentenceTransformer for text embeddings (title, description, category)
-* 📉 Price anomaly detection using Z-scores
-* 🖼️ CLIP image–text similarity integration
-* ⚡ Real-time predictions through FastAPI
-* 🎛️ Beautiful admin dashboard UI (React.js)
-* 📁 Modular ML artifacts (PCA, Scaler, Transformer, PyTorch model)
+### 🔍 Fraud Detection Engine
+- Detects suspicious product listings using ML models
+- Combines textual, numerical, and image-based signals
+
+### 🧠 AI Explainability
+- Provides reasoning behind predictions
+- Highlights contributing factors (price, text mismatch, seller risk)
+
+### 📊 Risk Visualization Dashboard
+- Displays risk scores in an intuitive format
+- Helps users quickly understand fraud probability
+
+### 👤 User & Seller Risk Tracking
+- Maintains behavioral risk profiles
+- Tracks suspicious activity trends over time
+
+### 🛠️ Admin Control Panel
+- Monitor platform-wide fraud activity
+- Generate reports and alerts
+- Take moderation actions
+
+### ⚡ Real-Time Detection
+- Instant predictions via FastAPI
+- Live activity tracking and alerts
 
 ---
 
 ## 🏗️ System Architecture
 
-Below is the overall architecture of the system:
+### High-Level Flow
 
-### **High-Level Flow**
+1. **Frontend (React.js)** sends product data via `POST /predict`
+2. **FastAPI Backend** validates and forwards request
+3. **ML Processing Layer**:
+   - Combines title, description, category
+   - Generates embeddings (SentenceTransformers)
+   - Applies PCA transformation
+   - Scales features using StandardScaler
 
-1. **Frontend (React.js)** sends product details via `POST /predict`.
-2. **FastAPI** validates input JSON and forwards it to ML pipeline.
-3. **ML Processing Layer** handles preprocessing:
+4. **Multimodal Analysis**:
+   - CLIP computes image-text similarity
+   - Price anomaly computed using Z-score
 
-   * Combine title + description + category
-   * Generate embeddings using SentenceTransformer
-   * PCA transformation
-   * Standard scaling
-4. **Model Inference**:
+5. **Model Inference**:
+   - Features concatenated
+   - Passed into PyTorch neural network
+   - Outputs suspicion score
 
-   * Features concatenated
-   * PyTorch MLP model outputs suspicion score
-   * Sigmoid + threshold → label (Safe / Suspicious)
-5. **Result returned** to React frontend.
+6. **Explainability Layer**:
+   - Breaks down contributing risk signals
 
-### 📁 Model Artifacts Used
+7. **Response Returned**:
+   - Suspicion score
+   - Label (Safe / Suspicious)
+   - Explanation + key signals
 
-* `all-MiniLM-L6-v2` (SentenceTransformer)
-* `pca_transform.pkl`
-* `scaler.pkl`
-* `suspicion_model.pt` (PyTorch classifier)
+---
+
+## 📁 Model Artifacts
+
+- `all-MiniLM-L6-v2` (SentenceTransformer)
+- `pca_transform.pkl`
+- `scaler.pkl`
+- `suspicion_model.pt` (PyTorch model)
+- CLIP model (for image-text similarity)
 
 ---
 
 ## 📂 Folder Structure
+
+---
 
 ```
 project-root/
@@ -99,6 +156,7 @@ project-root/
 
 * PyTorch
 * SentenceTransformers
+* CLIP (OpenAI)
 * Scikit-Learn (PCA, StandardScaler)
 * NumPy
 
@@ -126,9 +184,13 @@ project-root/
 
 ```json
 {
-  "suspicion_score": 0.0001,
-  "label": "Safe"
-}
+  "suspicion_score": 0.23,
+  "label": "Safe",
+  "explanation": {
+    "price_risk": "Low",
+    "text_consistency": "High",
+    "seller_risk": "Medium"
+  }
 ```
 
 ## ⚙️ Installation & Setup
@@ -181,10 +243,11 @@ else:
 
 ## 🧑‍💻 Future Improvements
 
-* Add image upload + CLIP scoring directly
-* Live auto-detection using background job
-* Multi-category risk profiling
-* Database for storing prediction history
+* Real-time streaming fraud detection
+* Advanced seller reputation scoring (graph-based)
+* Auto-blocking suspicious listings
+* Deployment with scalable microservices
+* Integration with live e-commerce platforms
 
 ---
 
